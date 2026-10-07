@@ -13,7 +13,7 @@ const getTemplate = () => {
     .cloneNode(true);
 };
 
-export const createCardElement = (
+export const createCard = (
   data,
   { onPreviewPicture, onLikeIcon, onDeleteCard }
 ) => {
