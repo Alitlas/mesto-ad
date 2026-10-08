@@ -40,3 +40,7 @@ export const updateLikes = (likeButton, likeCount, likesArray, userId) => {
     likeButton.classList.remove("card__like-button_is-active");
   }
 };
+
+export const removeCard = (cardElement) => {
+  cardElement.remove();
+};
