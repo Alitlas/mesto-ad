@@ -1,5 +1,5 @@
 // src/scripts/index.js
-import { createCard, updateLikes } from "./components/card.js";
+import { createCard, updateLikes, removeCard } from "./components/card.js";
 import { openModalWindow, closeModalWindow, setCloseModalWindowEventListeners } from "./components/modal.js";
 import { enableValidation, clearValidation } from "./components/validation.js";
 import { 
@@ -33,6 +33,14 @@ const avatarFormModalWindow = document.querySelector(".popup_type_edit-avatar");
 const avatarForm = avatarFormModalWindow.querySelector(".popup__form");
 const avatarInput = avatarForm.querySelector(".popup__input");
 
+//  Элементы для статистики
+const logoElement = document.querySelector(".header__logo");
+const usersStatsModalWindow = document.querySelector(".popup_type_info");
+const usersStatsModalInfoList = usersStatsModalWindow.querySelector(".popup__info");
+const usersStatsModalUserList = usersStatsModalWindow.querySelector(".popup__list");
+const infoDefinitionTemplate = document.querySelector("#popup-info-definition-template").content;
+const infoUserPreviewTemplate = document.querySelector("#popup-info-user-preview-template").content;
+
 let currentUserId = null;
 
 const validationSettings = {
@@ -44,7 +52,6 @@ const validationSettings = {
   errorClass: "popup__error_visible",
 };
 
-// для UX изменения текста кнопки при сохранении
 const renderLoading = (isLoading, buttonElement, defaultText = "Сохранить", loadingText = "Сохранение...") => {
   if (isLoading) {
     buttonElement.textContent = loadingText;
@@ -72,7 +79,7 @@ const handleLikeCard = (cardId, likeButton, likeCount) => {
 const handleDeleteCard = (cardId, cardElement) => {
   deleteCardApi(cardId)
     .then(() => {
-      cardElement.remove();
+      removeCard(cardElement);
     })
     .catch((err) => console.log(err));
 };
@@ -134,7 +141,64 @@ const handleCardFormSubmit = (evt) => {
     .finally(() => renderLoading(false, submitButton, "Создать"));
 };
 
-// Загрузка данных с сервера
+const formatDate = (date) => {
+  return date.toLocaleDateString("ru-RU", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
+
+const createInfoString = (term, description) => {
+  const item = infoDefinitionTemplate.querySelector(".popup__info-item").cloneNode(true);
+  item.querySelector(".popup__info-term").textContent = term;
+  item.querySelector(".popup__info-description").textContent = description;
+  return item;
+};
+
+const createUserBadge = (name) => {
+  const item = infoUserPreviewTemplate.querySelector(".popup__list-item").cloneNode(true);
+  item.textContent = name;
+  return item;
+};
+
+const handleLogoClick = () => {
+  getCardList()
+    .then((cards) => {
+      usersStatsModalInfoList.innerHTML = "";
+      usersStatsModalUserList.innerHTML = "";
+
+      const userCounts = {};
+      const userNames = {};
+
+      cards.forEach((c) => {
+        const id = c.owner._id;
+        userCounts[id] = (userCounts[id] || 0) + 1;
+        userNames[id] = c.owner.name;
+      });
+
+      const uniqueUsersCount = Object.keys(userCounts).length;
+      const maxCardsCount = Math.max(...Object.values(userCounts));
+
+      usersStatsModalInfoList.append(
+        createInfoString("Первая создана:", formatDate(new Date(cards[cards.length - 1].createdAt))),
+        createInfoString("Последняя создана:", formatDate(new Date(cards[0].createdAt))),
+        createInfoString("Всего пользователей:", uniqueUsersCount),
+        createInfoString("Максимум карточек от одного:", maxCardsCount)
+      );
+
+      Object.values(userNames).forEach((name) => {
+        usersStatsModalUserList.append(createUserBadge(name));
+      });
+
+      openModalWindow(usersStatsModalWindow);
+    })
+    .catch((err) => console.log(err));
+};
+
+logoElement.addEventListener("click", handleLogoClick);
+
+
 Promise.all([getUserInfo(), getCardList()])
   .then(([userData, cardsData]) => {
     currentUserId = userData._id;
@@ -154,7 +218,6 @@ Promise.all([getUserInfo(), getCardList()])
   })
   .catch((err) => console.error(err));
 
-// Слушатели
 profileForm.addEventListener("submit", handleProfileFormSubmit);
 cardForm.addEventListener("submit", handleCardFormSubmit);
 avatarForm.addEventListener("submit", handleAvatarFormSubmit);
