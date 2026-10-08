@@ -154,7 +154,7 @@ Promise.all([getUserInfo(), getCardList()])
   })
   .catch((err) => console.error(err));
 
-// Слушатели событий
+// Слушатели
 profileForm.addEventListener("submit", handleProfileFormSubmit);
 cardForm.addEventListener("submit", handleCardFormSubmit);
 avatarForm.addEventListener("submit", handleAvatarFormSubmit);
