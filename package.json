@@ -3,9 +3,12 @@
   "version": "1.0.0",
   "description": "Стартовый набор для выполнения проектной работы Место",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build"
+    "build": "vite build",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
   "repository": {
     "type": "git",
@@ -14,12 +17,12 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/Alitlas/mesto-ad/issues"
   },
   "homepage": "https://github.com/Alitlas/mesto-ad#readme",
   "devDependencies": {
+    "gh-pages": "^6.1.1",
     "vite": "^8.3.3"
   }
 }
